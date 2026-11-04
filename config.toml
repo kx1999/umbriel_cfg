@@ -215,6 +215,7 @@ follows_mouse = true
 "Mod+Ctrl+S" = { action = "spawn noctalia msg screenshot-window" }
 "Mod+Shift+Ctrl+S" = { action = "spawn noctalia msg screenshot-fullscreen pick" }
 "Mod+D" = { action = "spawn noctalia msg notification-dnd-toggle" }
+"Mod+Ctrl+P" = { action = "spawn noctalia msg plugin oldirtty/color_picker:service all pick" }
 
 "Alt+Tab" = "spawn noctalia msg window-switcher hold"
 # Reverse alt+tab waiting to be merged into main
