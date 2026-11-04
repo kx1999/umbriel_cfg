@@ -116,13 +116,13 @@ insert_hint = "#BD93F980"
 
 # Borders
 [colors.border]
-focused = "#50FA7BFF"
+focused = "#8BE9FDFF"
 unfocused = "#BD93F9FF"
 
 [colors.tab_bar]
-background = "#282A36FF"
+background = "#44475AFF"
 text = "#F8F8F2FF"
-active = "#8BE9FDFF"
+active = "#50FA7BFF"
 active_text = "#6272A4FF"
 active_unfocused = "#6272A4FF"
 active_unfocused_text = "#282A36FF"
@@ -153,8 +153,8 @@ selection = "unused_first" # or round_robin, random
 # Select with border = "borders" in your [effects] table.
 # Add to your existing [keybinds] table:
 
-[effects]
-border = "pulse"
+# [effects]
+# border = "pulse"
 
 # ==============================================================================
 # Input
@@ -211,6 +211,14 @@ follows_mouse = true
 "Mod+V" = { action = "spawn noctalia msg panel-toggle clipboard" }
 "Mod+Shift+V" = { action = "spawn noctalia msg clipboard-clear" }
 "Ctrl+Shift+P" = { action = "spawn noctalia msg plugin oldirtty/color_picker:service all pick" }
+"Mod+Shift+S" = { action = "spawn noctalia msg screenshot-region" }
+"Mod+Ctrl+S" = { action = "spawn noctalia msg screenshot-window" }
+"Mod+Shift+Ctrl+S" = { action = "spawn noctalia msg screenshot-fullscreen pick" }
+"Mod+D" = { action = "spawn noctalia msg notification-dnd-toggle" }
+
+"Alt+Tab" = "spawn noctalia msg window-switcher hold"
+# Reverse alt+tab waiting to be merged into main
+# "Alt+Shift+Tab" = "spawn noctalia msg window-switcher hold reverse"
 
 # Applications and session
 "Mod+K" = { action = "spawn dolphin" }
@@ -256,13 +264,15 @@ follows_mouse = true
 "Mod+F" = { action = "window-toggle-floating", repeat = false }
 "Mod+Shift+F" = { action = "window-focus-switch-floating", repeat = false }
 "Mod+P" = { action = "window-toggle-pinned", repeat = false }
-"Mod+M" = { action = "window-toggle-maximize-to-edges", repeat = false }
-"Mod+Ctrl+F" = { action = "window-toggle-fullscreen", repeat = false }
-"Mod+Ctrl+M" = { action = "window-toggle-maximize", repeat = false }
 "Mod+R" = "window-cycle-primary-extent"
 "Mod+Shift+R" = "window-cycle-primary-extent-back"
-"Mod+Comma" = "window-consume-left"
-"Mod+Period" = "window-consume-right"
+"Mod+Ctrl+F" = { action = "window-toggle-fullscreen", repeat = false }
+"Mod+A" = "window-cycle-secondary-extent"
+"Mod+Shift+A" = "window-cycle-secondary-extent-back"
+"Mod+Ctrl+A" = { action = "window-toggle-maximize", repeat = false }
+"Mod+Shift+Ctrl+A" = { action = "window-toggle-maximize-to-edges", repeat = false }
+"Mod+Comma" = "window-consume-or-expel-left"
+"Mod+Period" = "window-consume-or-expel-right"
 "Mod+Ctrl+Comma" = "window-consume-from-left"
 "Mod+Ctrl+Period" = "window-consume-from-right"
 # Needs layout.mode = "dwindle".
@@ -271,6 +281,7 @@ follows_mouse = true
 "Mod+Alt+Down" = "column-focus-tab-next"
 "Mod+Alt+Up" = "column-focus-tab-previous"
 "Mod+Tab" = { action = "overview-toggle", repeat = false }
+"Mod+C" = "column-center"
 
 # Workspaces
 # Move the whole workspace, retaining its name, layout, and windows.
@@ -301,7 +312,7 @@ follows_mouse = true
 "Mod+Shift+2" = "window-move-to-workspace 2"
 "Mod+Shift+3" = "window-move-to-workspace 3"
 "Mod+Shift+4" = "window-move-to-workspace 4"
-"Mod+Shift+5" = "window-move-to-workspace 5"
+
 "Mod+Shift+6" = "window-move-to-workspace 6"
 "Mod+Shift+7" = "window-move-to-workspace 7"
 "Mod+Shift+8" = "window-move-to-workspace 8"
@@ -362,6 +373,8 @@ overflow = "scroll"      # or "shrink" to fit every tab
 [appearance]
 border_width = 2
 corner_radius = 15
+opaque_fullscreen = false
+drag_opacity = 0.25
 
 # ==============================================================================
 # Window rules
@@ -373,6 +386,10 @@ corner_radius = 15
 # moves anything behind them.
 [[window_rule]]
 blur = true
+
+[[window_rule]]
+match.is_alone = true
+default_maximize = true
 
 [[window_rule]]
 match.app_id = "^dev.noctalia.Noctalia$"
@@ -399,7 +416,7 @@ default_pinned = true
 # Keep game menus inside their window; a focus or workspace keybind releases the pointer.
 [[window_rule]]
 match.app_id = "^steam_app_.*$"
-confine_pointer = true
+title_bar = "off"
 
 # Keep compositor shortcuts available while a virtual machine window is focused.
 # [[window_rule]]
@@ -435,8 +452,6 @@ background_render = true
 # Give scratchpad windows their own border colors.
 [[window_rule]]
 match.is_scratchpad = true
-border_color_focused = "#E5C07BFF"
-border_color_unfocused = "#5C4A2AFF"
 
 # Hide enabled title bars only while a window is maximized to edges.
 [[window_rule]]
@@ -446,8 +461,8 @@ title_bar = "off"
 # Frame the window being screencast; viewers never see the frame.
 [[window_rule]]
 match.is_cast_target = true
-border_color_focused = "#40C057FF"
-border_color_unfocused = "#40C057FF"
+border_color_focused = "#FFB86CFF"
+border_color_unfocused = "#FFB86CFF"
 
 # Leave an application that draws its own corners and shadow undecorated.
 # [[window_rule]]
@@ -469,7 +484,9 @@ blur_popups = true
 # live content behind them. The bar and desktop widgets sit on the wallpaper and
 # keep the cached wallpaper blur.
 [[layer_rule]]
-match.namespace = "^noctalia-(notification|dock|panel|attached-panel|osd)$"
+match.namespace = "^noctalia-(bar-[^\"]+|notification|dock|panel|attached-panel|osd)$"
+blur = true
+blur_ignore_alpha = 0.6
 blur_optimized = false
 
 # ==============================================================================
