@@ -199,6 +199,7 @@ follows_mouse = true
 # Syntax: https://docs.noctalia.dev/umbriel/keybinds/
 # Actions: https://docs.noctalia.dev/umbriel/actions/
 [keybinds]
+
 "Mod+Ctrl+Escape" = "cheatsheet-toggle"
 "Mod+O" = { action = "dpms-off", allow_when_locked = true }
 
@@ -243,6 +244,13 @@ follows_mouse = true
 "XF86MonBrightnessUp" = { action = "spawn noctalia msg brightness-up", allow_when_locked = true }
 "XF86MonBrightnessDown" = { action = "spawn noctalia msg brightness-down", allow_when_locked = true }
 
+# Custom script to cycle through audio sinks
+"Mod+M" = { action = "spawn cycle-sink" }
+
+# Custom discord hotkey requires local plugin
+"Mod+Ctrl+M" = { action = "spawn noctalia msg plugin raycursive/discord-voice:bridge all toggle-mute" }
+"Mod+Ctrl+D" = { action = "spawn noctalia msg plugin raycursive/discord-voice:bridge all toggle-deaf" }
+
 # Focus and movement
 "Mod+Left" = "window-focus-left"
 "Mod+Down" = "window-focus-down"
@@ -269,7 +277,7 @@ follows_mouse = true
 "Mod+Shift+R" = "window-cycle-primary-extent-back"
 "Mod+Ctrl+F" = { action = "window-toggle-fullscreen", repeat = false }
 "Mod+A" = "window-cycle-secondary-extent"
-"Mod+Shift+A" = "window-cycle-secondary-extent-back"
+"Mod+Shift+A" = "window-set-secondary-extent 1"
 "Mod+Ctrl+A" = { action = "window-toggle-maximize", repeat = false }
 "Mod+Shift+Ctrl+A" = { action = "window-toggle-maximize-to-edges", repeat = false }
 "Mod+Comma" = "window-consume-or-expel-left"

@@ -1,0 +1,36 @@
+#!/usr/bin/env fish
+# Cycle the default PulseAudio/PipeWire sink to the next available one,
+# moving all currently playing streams along with it.
+
+set -l sinks (pactl list short sinks | cut -f2)
+set -l count (count $sinks)
+
+if test $count -eq 0
+    echo "No audio sinks found" >&2
+    exit 1
+end
+
+set -l current (pactl get-default-sink)
+set -l idx (contains -i -- $current $sinks; or echo 0)
+
+# Wrap around to the first sink after the last one
+set -l next_idx (math "$idx % $count + 1")
+set -l next $sinks[$next_idx]
+
+pactl set-default-sink $next
+
+# Move existing playback streams to the new sink
+for input in (pactl list short sink-inputs | cut -f1)
+    pactl move-sink-input $input $next 2>/dev/null
+end
+
+# Human-friendly name for the notification
+set -l desc (pactl list sinks | awk -v n="$next" '
+    $1 == "Name:" { found = ($2 == n) }
+    found && /^\s*Description:/ { sub(/^\s*Description: /, ""); print; exit }')
+test -z "$desc"; and set desc $next
+
+echo "Audio output: $desc"
+if command -q notify-send
+    notify-send -a "Audio" -i audio-card -h string:x-canonical-private-synchronous:cycle-sink "Audio output" "$desc"
+end
