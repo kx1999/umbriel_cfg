@@ -14,12 +14,13 @@
 # https://docs.noctalia.dev/umbriel/configuration/#include
 [include]
 files = [
-	"/usr/share/umbriel/effects/border/pulse/effect.toml",
-	"/usr/share/umbriel/effects/border/audio/effect.toml"
+	"~/.config/umbriel/effects/border/rainbow-pulse/effect.toml",
+	"~/.config/umbriel/effects/cursor/ptrail/effect.toml",
+	"/usr/share/umbriel/effects/animation/workspace_wipe/effect.toml"
 ]
 
 [include.optional]
-files = []
+files = ["noctalia.toml"]
 
 # ==============================================================================
 # General
@@ -27,7 +28,7 @@ files = []
 # https://docs.noctalia.dev/umbriel/configuration/#general
 #
 [general]
-autostart = ["noctalia", "konsole"]
+autostart = ["noctalia", "konsole", "zen", "discord", "youtube-music-desktop-app", "steam", "com.anthropic.Claude"]
 xwayland = true
 # Sharp X11 apps and games on scaled outputs; they see physical resolutions.
 xwayland_native_resolution = true
@@ -59,7 +60,10 @@ xwayland_primary_output = "DP-1"
 # confirmation. Disable that protection only if immediate keybind changes are
 # preferred.
 # https://docs.noctalia.dev/umbriel/configuration/#screencast
-#
+
+[workspaces]
+empty_above = true
+
 [screencast]
 disable_dynamic_confirmation = true
 
@@ -82,6 +86,7 @@ sdr_transfer = "gamma22" # Or "srgb" for piecewise SDR decoding in HDR.
 # https://docs.noctalia.dev/umbriel/appearance/
 #
 [appearance.blur]
+optimized = false
 radius = 3
 
 # Optional title bar with modifier-free dragging and floating frame resizing.
@@ -98,34 +103,36 @@ button_glyph = "always" # X, square, and underscore symbols: "always", "hover" (
 button_background = true # Show colored backgrounds behind the symbols.
 
 # Optional button palette. Glyph colors also apply when button backgrounds are off.
-[colors.title_bar]
-close = "#FF6B6BFF"
-close_glyph = "#141419FF"
-close_glyph_hover = "#141419FF"
-maximize = "#7AA3FFFF"
-maximize_glyph = "#141419FF"
-maximize_glyph_hover = "#141419FF"
-minimize = "#FFD166FF"
-minimize_glyph = "#141419FF"
-minimize_glyph_hover = "#141419FF"
+# Hardcoded colors below are commented out so Noctalia's noctalia.toml (see [include.optional]) controls them.
+# Backup: config.toml.bak-pre-noctalia
+# [colors.title_bar]
+# close = "#FF6B6BFF"
+# close_glyph = "#141419FF"
+# close_glyph_hover = "#141419FF"
+# maximize = "#7AA3FFFF"
+# maximize_glyph = "#141419FF"
+# maximize_glyph_hover = "#141419FF"
+# minimize = "#FFD166FF"
+# minimize_glyph = "#141419FF"
+# minimize_glyph_hover = "#141419FF"
 
-# Choose the background color shown if the lock screen takes too long to appear.
-[colors]
-backdrop = "#000000FF"
-insert_hint = "#BD93F980"
+# # Choose the background color shown if the lock screen takes too long to appear.
+# [colors]
+# backdrop = "#000000FF"
+# insert_hint = "#BD93F980"
 
-# Borders
-[colors.border]
-focused = "#8BE9FDFF"
-unfocused = "#BD93F9FF"
+# # Borders
+# [colors.border]
+# focused = "#8BE9FDFF"
+# unfocused = "#BD93F9FF"
 
-[colors.tab_bar]
-background = "#44475AFF"
-text = "#F8F8F2FF"
-active = "#50FA7BFF"
-active_text = "#6272A4FF"
-active_unfocused = "#6272A4FF"
-active_unfocused_text = "#282A36FF"
+# [colors.tab_bar]
+# background = "#44475AFF"
+# text = "#F8F8F2FF"
+# active = "#50FA7BFF"
+# active_text = "#6272A4FF"
+# active_unfocused = "#6272A4FF"
+# active_unfocused_text = "#282A36FF"
 
 
 # ==============================================================================
@@ -153,8 +160,9 @@ selection = "unused_first" # or round_robin, random
 # Select with border = "borders" in your [effects] table.
 # Add to your existing [keybinds] table:
 
-# [effects]
-# border = "pulse"
+[effects]
+border = "pulse"
+cursor = "trail"
 
 # ==============================================================================
 # Input
@@ -227,7 +235,6 @@ follows_mouse = true
 "Mod+Shift+E" = { action = "spawn konsole -e nvim", repeat = false }
 "Mod+T" = { action = "spawn konsole", repeat = false }
 "Mod" = "spawn noctalia msg panel-toggle launcher"
-
 "Mod+Q" = { action = "window-close", repeat = false }
 # "Mod+Escape" = "session-quit"
 "Mod+Shift+Escape" = { action = "shortcuts-inhibit-toggle", allow_when_inhibited = true, repeat = false }
@@ -393,8 +400,6 @@ drag_opacity = 0.25
 # Blur windows over the cached wallpaper blur. Set blur_optimized = false to
 # include overlapping windows behind them, at a GPU cost on every frame that
 # moves anything behind them.
-[[window_rule]]
-blur = true
 
 [[window_rule]]
 match.is_alone = true
@@ -414,7 +419,10 @@ default_floating_size_px = { width = 800, height = 600 }
 match.title = "^(Picture-in-Picture|Picture in picture)$"
 default_floating = true
 default_maximize = false
-default_position = { x = 20, y = 20, anchor = "bottom_right" }
+default_floating_size_px = { width = 960, height = 540 }
+default_pinned = true
+opacity = 0.8
+default_position = { x = 20, y = 20, anchor = "top_right" }
 
 [[window_rule]]
 match.title = "^notificationtoasts_.+_desktop"
@@ -422,10 +430,41 @@ default_position = { x = 0, y = 0, anchor = "bottom_right" }
 default_focused = false
 default_pinned = true
 
+[[window_rule]]
+match.app_id = "com.anthropic.Claude"
+default_workspace = 3
+
+[[window_rule]]
+match.app_id = "slack"
+default_workspace = 3
+
+[[window_rule]]
+match.app_id = "discord"
+default_position = { x = 410 , y = 90, anchor = "top_left" }
+default_floating_size_px = { width = 1920, height = 1280 }
+default_floating = true
+default_scratchpad = "default"
+
+[[window_rule]]
+match.app_id = "youtube-music-desktop-app"
+default_position = { x = 410 , y = 90, anchor = "top_right" }
+default_floating_size_px = { width = 1920, height = 1280 }
+default_floating = true
+default_scratchpad = "default"
+
 # Keep game menus inside their window; a focus or workspace keybind releases the pointer.
 [[window_rule]]
 match.app_id = "^steam_app_.*$"
 title_bar = "off"
+
+[[window_rule]]
+match.app_id = "steam"
+match.title = "Friends List"
+default_floating = true
+
+[[window_rule]]
+match.app_id = "steam_app_216150"
+default_floating = true
 
 # Keep compositor shortcuts available while a virtual machine window is focused.
 # [[window_rule]]
@@ -458,10 +497,6 @@ background_render = true
 # match.app_id = "^spotify$"
 # default_scratchpad = "music"
 
-# Give scratchpad windows their own border colors.
-[[window_rule]]
-match.is_scratchpad = true
-
 # Hide enabled title bars only while a window is maximized to edges.
 [[window_rule]]
 match.is_maximized_to_edges = true
@@ -487,16 +522,16 @@ border_color_unfocused = "#FFB86CFF"
 match.namespace = "^noctalia-(bar-[^\"]+|notification|dock|panel|attached-panel|osd|desktop-widget-[^\"]*)$"
 blur = true
 blur_ignore_alpha = 0.5
-blur_popups = true
+blur_popups = false
 
 # Panels, the dock, notifications and OSDs open over windows, so they blur the
 # live content behind them. The bar and desktop widgets sit on the wallpaper and
 # keep the cached wallpaper blur.
-[[layer_rule]]
-match.namespace = "^noctalia-(bar-[^\"]+|notification|dock|panel|attached-panel|osd)$"
-blur = true
-blur_ignore_alpha = 0.6
-blur_optimized = false
+#[[layer_rule]]
+#match.namespace = "^noctalia-(bar-[^\"]+|notification|dock|panel|attached-panel|osd)$"
+#blur = true
+#blur_ignore_alpha = 0.6
+#blur_optimized = false
 
 # ==============================================================================
 # Overview
@@ -519,9 +554,9 @@ curve = "spring:1,900"
 # Optional live workspace reveal (see docs/user/animation.md).
 # Add the bundled effects/animation/workspace_wipe/effect.toml to your includes.
 [animation.workspaces]
-# style = "reveal"          # Default: "slide"
-# effect = "workspace_wipe"
-duration_ms = 300
+style = "reveal"          # Default: "slide"
+effect = "workspace_wipe"
+duration_ms = 250
 curve = "easeout"
 
 # Shade over a window while a modal dialog is attached to it.
