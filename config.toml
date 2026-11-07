@@ -20,7 +20,7 @@ files = [
 ]
 
 [include.optional]
-files = ["testing.toml", "noctalia.toml"]
+files = ["testing.toml", "cursor.toml", "noctalia.toml"]
 
 # ==============================================================================
 # General
@@ -174,14 +174,15 @@ cursor = "trail"
 [input.mouse]
 accel_profile = "flat"
 sensitivity = 0.0
+middle_emulation = true # left+right together = middle click
 
 [input.cursor]
-theme = ""
-size = 24
+# cursor plugin: theme = ""
+# cursor plugin: size = 24
 hardware_cursor = true
 follows_focus = false
-hide_when_typing = true
-hide_timeout_ms = 5000
+# cursor plugin: hide_when_typing = true
+# cursor plugin: hide_timeout_ms = 5000
 
 [input.keyboard]
 numlock_toggle = true
