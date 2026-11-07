@@ -23,14 +23,3 @@ pactl set-default-sink $next
 for input in (pactl list short sink-inputs | cut -f1)
     pactl move-sink-input $input $next 2>/dev/null
 end
-
-# Human-friendly name for the notification
-set -l desc (pactl list sinks | awk -v n="$next" '
-    $1 == "Name:" { found = ($2 == n) }
-    found && /^\s*Description:/ { sub(/^\s*Description: /, ""); print; exit }')
-test -z "$desc"; and set desc $next
-
-echo "Audio output: $desc"
-if command -q notify-send
-    notify-send -a "Audio" -i audio-card -h string:x-canonical-private-synchronous:cycle-sink "Audio output" "$desc"
-end
