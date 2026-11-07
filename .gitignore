@@ -3,3 +3,5 @@ noctalia.toml
 
 # Local testing config, included optionally from config.toml
 testing.toml
+
+.claude
