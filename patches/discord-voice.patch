@@ -1,0 +1,485 @@
+diff --color -ruN a/discord-voice/discord_bridge.py b/discord-voice/discord_bridge.py
+--- a/discord-voice/discord_bridge.py	2026-11-06 20:17:07.851517884 -0500
++++ b/discord-voice/discord_bridge.py	2026-11-06 20:57:52.982304258 -0500
+@@ -41,9 +41,19 @@
+ 
+ RECONNECT_SECONDS = 3
+ HEARTBEAT_SECONDS = 5
++# Rapid join presses are coalesced: only the last target within this quiet
++# period is sent, since Discord rate-limits voice channel changes.
++JOIN_DEBOUNCE_SECONDS = 0.3
++# Discord accepts a rate-limited join over RPC but never connects the voice
++# session, so a join that is not voice-connected by then is reported.
++JOIN_CONFIRM_SECONDS = 5
++RATE_LIMIT_MESSAGE = (
++    "Discord is rate limiting voice channel changes. "
++    "Wait a few seconds and try again."
++)
+ MAX_AVATAR_BYTES = 2 * 1024 * 1024
+ MAX_RPC_PAYLOAD_BYTES = 8 * 1024 * 1024
+-MAX_RECENT_CHANNELS = 5
++MAX_RECENT_CHANNELS = 10
+ MAX_FAVORITE_CHANNELS = 5
+ VOICE_STATE_EVENTS = (
+     "VOICE_STATE_CREATE",
+@@ -183,7 +193,7 @@
+     @classmethod
+     def _channels(cls, value: Any, limit: int) -> list[dict[str, Any]]:
+         # Version 0.1 stored a single object at ``recent``. Accept it so users
+-        # keep their saved channel when upgrading to the five-item history.
++        # keep their saved channel when upgrading to the multi-item history.
+         values = value if isinstance(value, list) else [value]
+         channels: list[dict[str, Any]] = []
+         seen: set[str] = set()
+@@ -463,6 +473,8 @@
+         self.revision = 0
+         self.pending: dict[str, dict[str, Any]] = {}
+         self.next_nonce = 0
++        self.pending_join: asyncio.Task[None] | None = None
++        self.join_watch: asyncio.Task[None] | None = None
+         self.active_token: str | None = None
+         self.avatar_tasks: dict[str, asyncio.Task[None]] = {}
+         self.saved_channel_counts: dict[str, int] = {}
+@@ -532,9 +544,13 @@
+                 "user": self.current_user,
+                 "channel": self.channel,
+                 "recent_channels": self._sorted_saved_channels(self.recent_channels),
+-                "favorite_channels": self._sorted_saved_channels(
+-                    self.favorite_channels
+-                ),
++                "favorite_channels": [
++                    {**channel, "slot": index}
++                    for index, channel in enumerate(
++                        self._decorated_saved_channels(self._favorite_slots()),
++                        start=1,
++                    )
++                ],
+                 "participants": participants,
+                 "voice": self.voice_settings,
+                 "connection": self.connection,
+@@ -542,7 +558,7 @@
+             }
+         )
+ 
+-    def _sorted_saved_channels(
++    def _decorated_saved_channels(
+         self, channels: list[dict[str, Any]]
+     ) -> list[dict[str, Any]]:
+         decorated: list[dict[str, Any]] = []
+@@ -552,8 +568,13 @@
+                 0, self.saved_channel_counts.get(channel["id"], 0)
+             )
+             decorated.append(entry)
++        return decorated
++
++    def _sorted_saved_channels(
++        self, channels: list[dict[str, Any]]
++    ) -> list[dict[str, Any]]:
+         return sorted(
+-            decorated,
++            self._decorated_saved_channels(channels),
+             key=lambda entry: (
+                 entry["participant_count"] > 0,
+                 entry["last_joined_time"],
+@@ -670,16 +691,109 @@
+         await self._save_channel_lists()
+         return {"ok": True}
+ 
++    def _cancel_pending_join(self) -> None:
++        for task in (self.pending_join, self.join_watch):
++            if task is not None:
++                task.cancel()
++        self.pending_join = None
++        self.join_watch = None
++
++    def _clear_rate_limit_warning(self) -> None:
++        if self.status_message == RATE_LIMIT_MESSAGE:
++            self.status_message = ""
++            self._emit_snapshot()
++
++    async def _confirm_join(self, channel_id: str) -> None:
++        try:
++            await asyncio.sleep(JOIN_CONFIRM_SECONDS)
++        except asyncio.CancelledError:
++            return
++        self.join_watch = None
++        if (
++            self.channel
++            and self.channel["id"] == channel_id
++            and self.connection["state"] == "VOICE_CONNECTED"
++        ):
++            return
++        log.warning("Voice join to %s did not connect; likely rate limited", channel_id)
++        self.status_message = RATE_LIMIT_MESSAGE
++        self._emit_snapshot()
++        self._write_event(
++            {"type": "warning", "title": "Discord Voice", "message": RATE_LIMIT_MESSAGE}
++        )
++
+     async def _join_channel(self, channel_id: str) -> dict[str, Any]:
+         if self._saved_channel(channel_id) is None:
+             return {"ok": False, "error": "Saved channel is no longer available"}
+-        await self._request(
+-            "SELECT_VOICE_CHANNEL",
+-            {"channel_id": channel_id},
+-            kind="join_channel",
+-        )
++        # A newer press always replaces a join that has not been sent yet.
++        self._cancel_pending_join()
++        self._clear_rate_limit_warning()
++        if self.channel and self.channel["id"] == channel_id:
++            return {"ok": True, "already_connected": True}
++        self.pending_join = asyncio.create_task(self._send_join(channel_id))
+         return {"ok": True}
+ 
++    async def _send_join(self, channel_id: str) -> None:
++        try:
++            await asyncio.sleep(JOIN_DEBOUNCE_SECONDS)
++        except asyncio.CancelledError:
++            return
++        self.pending_join = None
++        if self.channel and self.channel["id"] == channel_id:
++            return
++        try:
++            # force moves us directly when already in another voice channel,
++            # costing one voice state change instead of a leave plus a join.
++            await self._request(
++                "SELECT_VOICE_CHANNEL",
++                {"channel_id": channel_id, "force": True},
++                kind="join_channel",
++            )
++            self.join_watch = asyncio.create_task(self._confirm_join(channel_id))
++        except Exception as error:
++            log.warning("Joining voice channel failed: %s", error)
++            self.status_message = str(error)
++            self._emit_snapshot()
++
++    def _favorite_slots(self) -> list[dict[str, Any]]:
++        # Favorites are stored newest-first; slots are numbered oldest-first so
++        # starring another channel appends a slot instead of renumbering the
++        # existing ones. move_favorite reorders slots explicitly.
++        return list(reversed(self.favorite_channels))
++
++    async def _move_favorite(self, channel_id: str, insert_at: int) -> dict[str, Any]:
++        # insert_at is a 1-based gap index in slot order: N means "before the
++        # current slot N", len + 1 means "after the last slot".
++        slots = self._favorite_slots()
++        from_index = next(
++            (i for i, channel in enumerate(slots) if channel["id"] == channel_id),
++            None,
++        )
++        if from_index is None:
++            return {"ok": False, "error": "Favorite channel is no longer available"}
++        channel = slots.pop(from_index)
++        target = insert_at - 1
++        if from_index < target:
++            target -= 1
++        target = max(0, min(target, len(slots)))
++        slots.insert(target, channel)
++        self.favorite_channels = list(reversed(slots))
++        await self._save_channel_lists()
++        return {"ok": True, "slot": target + 1}
++
++    async def _join_favorite(self, slot: int) -> dict[str, Any]:
++        slots = self._favorite_slots()
++        if not 1 <= slot <= len(slots):
++            return {
++                "ok": False,
++                "error": f"No favorite in slot {slot} ({len(slots)} saved)",
++            }
++        channel = slots[slot - 1]
++        result = await self._join_channel(channel["id"])
++        if result.get("ok"):
++            result.update(slot=slot, channel=channel["name"])
++        return result
++
+     async def _handle_control_command(self, request: dict[str, Any]) -> dict[str, Any]:
+         command = request["command"]
+         if command == "status":
+@@ -697,6 +811,9 @@
+                     for participant in self.participants.values()
+                     if participant["speaking"]
+                 ),
++                "mute": self.voice_settings["mute"],
++                "deaf": self.voice_settings["deaf"],
++                "input_volume": self.voice_settings["input_volume"],
+                 "connection_state": self.connection["state"],
+                 "average_ping": self.connection["average_ping"],
+                 "saved_channel": (sorted_favorites[0] if sorted_favorites else None)
+@@ -726,6 +843,12 @@
+             if command == "unfavorite_channel":
+                 return await self._unfavorite_channel(channel_id)
+             return await self._join_channel(channel_id)
++        if command == "join_favorite":
++            return await self._join_favorite(request["value"])
++        if command == "move_favorite":
++            return await self._move_favorite(
++                request["value"]["channel_id"], int(request["value"]["index"])
++            )
+         if command == "set_mute":
+             await self._request(
+                 "SET_VOICE_SETTINGS",
+@@ -740,6 +863,15 @@
+                 kind="voice_settings",
+             )
+             return {"ok": True}
++        if command in ("toggle_mute", "toggle_deaf"):
++            key = "mute" if command == "toggle_mute" else "deaf"
++            target = not self.voice_settings[key]
++            await self._request(
++                "SET_VOICE_SETTINGS",
++                {key: target},
++                kind="voice_settings",
++            )
++            return {"ok": True, key: target}
+         if command == "set_mic_volume":
+             volume = request["value"]
+             previous_volume = self.voice_settings["input_volume"]
+@@ -786,6 +918,7 @@
+             )
+             return {"ok": True}
+         if command == "hang_up":
++            self._cancel_pending_join()
+             await self._request(
+                 "SELECT_VOICE_CHANNEL",
+                 {"channel_id": None},
+@@ -840,6 +973,7 @@
+             await self._handle_discord_payload(payload)
+ 
+     def _reset_session_state(self) -> None:
++        self._cancel_pending_join()
+         self.pending.clear()
+         self.channel_event_subscriptions.clear()
+         self.saved_channel_counts.clear()
+@@ -1385,6 +1519,8 @@
+                 "average_ping": int(float(data.get("average_ping") or 0)),
+                 "last_ping": int(float(data.get("last_ping") or 0)),
+             }
++            if self.connection["state"] == "VOICE_CONNECTED":
++                self._clear_rate_limit_warning()
+             self._emit_snapshot()
+             return
+ 
+@@ -1487,6 +1623,10 @@
+             value = int(sys.argv[4])
+         elif command in ("favorite_channel", "unfavorite_channel", "join_channel"):
+             value = sys.argv[3]
++        elif command == "join_favorite":
++            value = int(sys.argv[3])
++        elif command == "move_favorite":
++            value = {"channel_id": sys.argv[3], "index": int(sys.argv[4])}
+         else:
+             value = None
+     except (IndexError, ValueError) as error:
+diff --color -ruN a/discord-voice/panel.luau b/discord-voice/panel.luau
+--- a/discord-voice/panel.luau	2026-11-06 20:17:07.851517884 -0500
++++ b/discord-voice/panel.luau	2026-11-06 20:57:52.982133834 -0500
+@@ -311,10 +311,84 @@
+   return rows
+ end
+ 
++local FAVORITE_DRAG_TYPE = "discord-voice-favorite"
++
++local function favoriteInsertionZone(index)
++  return ui.dropZone({
++    key = "favorite-gap-" .. index,
++    accepts = { FAVORITE_DRAG_TYPE },
++    value = tostring(index),
++    onDrop = "onFavoriteDropped",
++    height = 4,
++    radius = 4,
++    expandOnDrag = true,
++    hitSlop = 20,
++  })
++end
++
++function onFavoriteDropped(payload, value)
++  local insertAt = tonumber(value)
++  if type(payload) ~= "string" or payload == "" or insertAt == nil or actionPending then
++    return
++  end
++  -- Reorder locally so the drop lands immediately; the bridge's snapshot
++  -- (with renumbered slots) replaces this once it has saved the new order.
++  local favorites = snapshot.favorite_channels
++  local fromIndex = nil
++  for index, channel in ipairs(favorites) do
++    if channel.id == payload then
++      fromIndex = index
++      break
++    end
++  end
++  if fromIndex == nil then
++    return
++  end
++  local target = insertAt
++  if fromIndex < target then
++    target -= 1
++  end
++  target = math.max(1, math.min(target, #favorites))
++  if target == fromIndex then
++    return
++  end
++  local moved = table.remove(favorites, fromIndex)
++  table.insert(favorites, target, moved)
++  for index, channel in ipairs(favorites) do
++    channel.slot = index
++  end
++  runBridgeCommand("move-favorite", payload, tostring(insertAt))
++end
++
+ local function recentChannelRow(channel, favorite)
+   local serverName = channel.guild_name ~= "" and channel.guild_name or tr("unknown_server")
+   local participantCount = channel.participant_count
+-  local children = {
++  local children = {}
++  if favorite then
++    table.insert(children, ui.dragSource({
++      key = "favorite-grip-" .. channel.id,
++      dragType = FAVORITE_DRAG_TYPE,
++      payload = channel.id,
++      previewAncestor = 1,
++      liftFromLayout = true,
++      width = 20,
++      height = 20,
++      align = "center",
++      justify = "center",
++      tooltip = tr("saved.drag_tooltip"),
++    }, {
++      ui.glyph({ name = "menu-2", size = 14, color = "on_surface_variant" }),
++    }))
++    table.insert(children, ui.label({
++      text = tostring(channel.slot or ""),
++      width = 14,
++      fontSize = 11,
++      fontWeight = "bold",
++      color = "on_surface_variant",
++      textAlign = "center",
++    }))
++  end
++  table.insert(children,
+     ui.button({
+       glyph = favorite and "star-filled" or "star",
+       variant = "ghost",
+@@ -323,11 +397,10 @@
+       onClick = function()
+         runBridgeCommand(favorite and "unfavorite-channel" or "favorite-channel", channel.id)
+       end,
+-    }),
+-    ui.label({ text = serverName, width = 120, fontWeight = "bold", color = "primary", maxLines = 1 }),
+-    ui.label({ text = "/", color = "on_surface_variant" }),
+-    ui.label({ text = channel.name, color = "on_surface_variant", flexGrow = 1, maxLines = 1 }),
+-  }
++    }))
++  table.insert(children, ui.label({ text = serverName, width = 120, fontWeight = "bold", color = "primary", maxLines = 1 }))
++  table.insert(children, ui.label({ text = "/", color = "on_surface_variant" }))
++  table.insert(children, ui.label({ text = channel.name, color = "on_surface_variant", flexGrow = 1, maxLines = 1 }))
+   if participantCount > 0 then
+     table.insert(children, ui.row({ gap = 4, align = "center" }, {
+       ui.glyph({ name = "users", size = 14, color = "primary" }),
+@@ -361,9 +434,18 @@
+   local rows = {}
+   local favoriteIds = {}
+ 
+-  for _, channel in ipairs(snapshot.favorite_channels) do
++  -- Favorites render in hotkey slot order, separated by drop zones so the
++  -- grip can drag them into a new slot. Grouped in a tight column so the
++  -- drop zones don't add the scroll's full gap between favorite rows.
++  local favoriteRows = {}
++  for index, channel in ipairs(snapshot.favorite_channels) do
+     favoriteIds[channel.id] = true
+-    table.insert(rows, recentChannelRow(channel, true))
++    table.insert(favoriteRows, favoriteInsertionZone(index))
++    table.insert(favoriteRows, recentChannelRow(channel, true))
++  end
++  if #favoriteRows > 0 then
++    table.insert(favoriteRows, favoriteInsertionZone(#snapshot.favorite_channels + 1))
++    table.insert(rows, ui.column({ key = "favorites", gap = 2, align = "stretch" }, favoriteRows))
+   end
+ 
+   for _, channel in ipairs(snapshot.recent_channels) do
+diff --color -ruN a/discord-voice/README.md b/discord-voice/README.md
+--- a/discord-voice/README.md	2026-11-06 20:17:07.851517884 -0500
++++ b/discord-voice/README.md	2026-11-06 20:57:52.982304258 -0500
+@@ -55,10 +55,38 @@
+ # Leave the current voice channel.
+ noctalia msg plugin raycursive/discord-voice:bridge all hangup
+ 
++# Toggle self-mute or self-deafen.
++noctalia msg plugin raycursive/discord-voice:bridge all toggle-mute
++noctalia msg plugin raycursive/discord-voice:bridge all toggle-deaf
++
++# Join favorite voice channel N (1-5). Slot numbers are shown next to each
++# favorite in the panel; drag a favorite's grip to move it to another slot.
++# Joining while in another voice channel moves you directly; rapid presses are
++# coalesced (only the last one within 300 ms is sent) to stay under Discord's
++# voice rate limit. If a join is not voice-connected within 5 s (Discord is rate
++# limiting), a notification and a panel warning tell you to wait and retry.
++noctalia msg plugin raycursive/discord-voice:bridge all join-favorite-1
++
+ # Write a token-free state summary to the Noctalia log.
+ noctalia msg plugin raycursive/discord-voice:bridge all dump
+ ```
+ 
++The bridge script can also be called directly; it prints a JSON response:
++
++```sh
++bridge=~/.local/share/noctalia-local-plugins/discord-voice/discord_bridge.py
++
++# Includes "mute", "deaf", and "input_volume" alongside connection state.
++python3 $bridge command status
++
++# Flip the current state; the response reports the new value, e.g. {"ok":true,"mute":true}.
++python3 $bridge command toggle-mute
++python3 $bridge command toggle-deaf
++
++# Join favorite slot 3.
++python3 $bridge command join-favorite 3
++```
++
+ ## Notes
+ 
+ - The plugin requests only the Discord OAuth scopes `rpc`, `rpc.voice.read`, and `rpc.voice.write`. It does not request message, notification, relationship, or guild-member scopes.
+diff --color -ruN a/discord-voice/service.luau b/discord-voice/service.luau
+--- a/discord-voice/service.luau	2026-11-06 20:17:07.851517884 -0500
++++ b/discord-voice/service.luau	2026-11-06 20:57:52.982133834 -0500
+@@ -57,6 +57,10 @@
+   if event.type == "heartbeat" then
+     return
+   end
++  if event.type == "warning" then
++    noctalia.notify(event.title or "Discord Voice", event.message or "")
++    return
++  end
+   if event.type ~= "snapshot" then
+     return
+   end
+@@ -147,6 +151,14 @@
+     noctalia.runAsync("python3 " .. bridgeScript .. " command refresh")
+   elseif event == "hangup" then
+     noctalia.runAsync("python3 " .. bridgeScript .. " command hang-up")
++  elseif event == "toggle-mute" then
++    noctalia.runAsync("python3 " .. bridgeScript .. " command toggle-mute")
++  elseif event == "toggle-deaf" then
++    noctalia.runAsync("python3 " .. bridgeScript .. " command toggle-deaf")
++  elseif event:match("^join%-favorite%-%d+$") then
++    -- join-favorite-N joins favorite slot N (slot numbers are shown in the panel).
++    local slot = event:match("(%d+)$")
++    noctalia.runAsync("python3 " .. bridgeScript .. " command join-favorite " .. slot)
+   elseif event == "dump" then
+     local snapshot = noctalia.state.get(BRIDGE_STATE_KEY)
+     local safe = {
+diff --color -ruN a/discord-voice/translations/en.json b/discord-voice/translations/en.json
+--- a/discord-voice/translations/en.json	2026-11-06 20:17:07.851701469 -0500
++++ b/discord-voice/translations/en.json	2026-11-06 20:57:52.982304258 -0500
+@@ -51,8 +51,9 @@
+   },
+   "saved": {
+     "channels": "Recent channels",
+-    "empty": "Your five most recently joined channels will appear here.",
+-    "join": "Join"
++    "empty": "Your ten most recently joined channels will appear here.",
++    "join": "Join",
++    "drag_tooltip": "Drag to change hotkey slot"
+   },
+   "settings": {
+     "discord_binary": {
