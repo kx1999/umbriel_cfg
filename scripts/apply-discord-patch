@@ -33,8 +33,10 @@ if not test -d $DISCORD_VOICE_PLUGIN_DIR
 end
 
 # Patch paths look like a/discord-voice/<file>; -p2 strips both prefixes so the
-# patch applies inside the plugin directory regardless of its name.
-set -l patch_args -p2 -d $DISCORD_VOICE_PLUGIN_DIR --batch --silent -i $DISCORD_VOICE_PATCH
+# patch applies inside the plugin directory regardless of its name. --force
+# keeps patch non-interactive without --batch's auto-reversal, which would
+# make the "already applied" check succeed on an unpatched plugin.
+set -l patch_args -p2 -d $DISCORD_VOICE_PLUGIN_DIR --force --silent -i $DISCORD_VOICE_PATCH
 
 if patch $patch_args --reverse --dry-run >/dev/null 2>&1
     echo "Patch already applied to $DISCORD_VOICE_PLUGIN_DIR"
@@ -44,7 +46,7 @@ end
 if not patch $patch_args --forward --dry-run >/dev/null 2>&1
     echo "Patch does not apply cleanly to $DISCORD_VOICE_PLUGIN_DIR; nothing was changed." >&2
     echo "The plugin has probably changed upstream. Dry-run output:" >&2
-    patch -p2 -d $DISCORD_VOICE_PLUGIN_DIR --batch --forward --dry-run -i $DISCORD_VOICE_PATCH >&2
+    patch -p2 -d $DISCORD_VOICE_PLUGIN_DIR --force --forward --dry-run -i $DISCORD_VOICE_PATCH >&2
     exit 1
 end
 
