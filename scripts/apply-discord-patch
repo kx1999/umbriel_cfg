@@ -1,0 +1,57 @@
+#!/usr/bin/env fish
+# Apply ~/.config/umbriel/patches/discord-voice.patch to the local copy of the
+# raycursive/discord-voice Noctalia plugin, then restart its bridge.
+#
+# Safe to re-run: reports "already applied" if the patch is in place, and
+# changes nothing if the patch does not apply cleanly (e.g. upstream changed).
+#
+# Overrides: DISCORD_VOICE_PATCH, DISCORD_VOICE_PLUGIN_DIR, DISCORD_VOICE_UPSTREAM_DIR
+
+set -q DISCORD_VOICE_PATCH; or set -l DISCORD_VOICE_PATCH ~/.config/umbriel/patches/discord-voice.patch
+set -q DISCORD_VOICE_PLUGIN_DIR; or set -l DISCORD_VOICE_PLUGIN_DIR ~/.local/share/noctalia-local-plugins/discord-voice
+set -q DISCORD_VOICE_UPSTREAM_DIR; or set -l DISCORD_VOICE_UPSTREAM_DIR ~/.local/state/noctalia/plugins/materialized/community/discord-voice
+
+if not command -q patch
+    echo "patch is not installed" >&2
+    exit 1
+end
+
+if not test -f $DISCORD_VOICE_PATCH
+    echo "Patch not found: $DISCORD_VOICE_PATCH" >&2
+    exit 1
+end
+
+# Start from Noctalia's copy of the community plugin if there is no local copy yet.
+if not test -d $DISCORD_VOICE_PLUGIN_DIR
+    if not test -d $DISCORD_VOICE_UPSTREAM_DIR
+        echo "No plugin at $DISCORD_VOICE_PLUGIN_DIR and no upstream copy at $DISCORD_VOICE_UPSTREAM_DIR" >&2
+        exit 1
+    end
+    mkdir -p (dirname $DISCORD_VOICE_PLUGIN_DIR)
+    cp -r $DISCORD_VOICE_UPSTREAM_DIR $DISCORD_VOICE_PLUGIN_DIR
+    echo "Copied upstream plugin to $DISCORD_VOICE_PLUGIN_DIR"
+end
+
+# Patch paths look like a/discord-voice/<file>; -p2 strips both prefixes so the
+# patch applies inside the plugin directory regardless of its name.
+set -l patch_args -p2 -d $DISCORD_VOICE_PLUGIN_DIR --batch --silent -i $DISCORD_VOICE_PATCH
+
+if patch $patch_args --reverse --dry-run >/dev/null 2>&1
+    echo "Patch already applied to $DISCORD_VOICE_PLUGIN_DIR"
+    exit 0
+end
+
+if not patch $patch_args --forward --dry-run >/dev/null 2>&1
+    echo "Patch does not apply cleanly to $DISCORD_VOICE_PLUGIN_DIR; nothing was changed." >&2
+    echo "The plugin has probably changed upstream. Dry-run output:" >&2
+    patch -p2 -d $DISCORD_VOICE_PLUGIN_DIR --batch --forward --dry-run -i $DISCORD_VOICE_PATCH >&2
+    exit 1
+end
+
+patch $patch_args --forward; or exit 1
+echo "Applied $DISCORD_VOICE_PATCH to $DISCORD_VOICE_PLUGIN_DIR"
+
+# Noctalia's watchdog respawns the bridge within ~20 s, loading the new code.
+if pkill -f "$DISCORD_VOICE_PLUGIN_DIR/discord_bridge.py daemon"
+    echo "Restarted the Discord Voice bridge; it will be back within ~20 s."
+end
