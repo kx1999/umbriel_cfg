@@ -255,9 +255,15 @@ follows_mouse = true
 # Custom script to cycle through audio sinks
 "Mod+M" = { action = "spawn cycle-sink" }
 
-# Custom discord hotkey requires local plugin
+# Custom discord hotkeys requires local plugin
 "Mod+Ctrl+M" = { action = "spawn noctalia msg plugin raycursive/discord-voice:bridge all toggle-mute" }
 "Mod+Ctrl+D" = { action = "spawn noctalia msg plugin raycursive/discord-voice:bridge all toggle-deaf" }
+"Mod+Ctrl+H" = { action = "spawn noctalia msg plugin raycursive/discord-voice:bridge all hangup", repeat = false }
+"Mod+Ctrl+1" = { action = "spawn noctalia msg plugin raycursive/discord-voice:bridge all join-favorite-1", repeat = false }
+"Mod+Ctrl+2" = { action = "spawn noctalia msg plugin raycursive/discord-voice:bridge all join-favorite-2", repeat = false }
+"Mod+Ctrl+3" = { action = "spawn noctalia msg plugin raycursive/discord-voice:bridge all join-favorite-3", repeat = false }
+"Mod+Ctrl+4" = { action = "spawn noctalia msg plugin raycursive/discord-voice:bridge all join-favorite-4", repeat = false }
+"Mod+Ctrl+5" = { action = "spawn noctalia msg plugin raycursive/discord-voice:bridge all join-favorite-5", repeat = false }
 
 # Focus and movement
 "Mod+Left" = "window-focus-left"
