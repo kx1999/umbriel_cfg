@@ -1,0 +1,80 @@
+#!/usr/bin/env fish
+# Rebuild umbriel-middle-emu (upstream Umbriel + patches/middle-emulation.patch),
+# validate the config, then offer to log out so the new compositor starts.
+# See ~/src/umbriel-middle-emu-pkg/README.md for the manual steps.
+#
+# Override: UMBRIEL_PKG_DIR
+
+set -q UMBRIEL_PKG_DIR; or set -l UMBRIEL_PKG_DIR ~/src/umbriel-middle-emu-pkg
+
+if not isatty stdin
+    echo "Run this from a terminal: sudo needs to prompt for a password." >&2
+    exit 1
+end
+
+if not test -f $UMBRIEL_PKG_DIR/PKGBUILD
+    echo "No PKGBUILD in $UMBRIEL_PKG_DIR" >&2
+    exit 1
+end
+
+# The patch is a symlink into the config repo; a dangling link means it moved.
+if not test -e $UMBRIEL_PKG_DIR/middle-emulation.patch
+    echo "Patch missing: $UMBRIEL_PKG_DIR/middle-emulation.patch -> "(readlink $UMBRIEL_PKG_DIR/middle-emulation.patch) >&2
+    exit 1
+end
+
+set -l before (pacman -Q umbriel-middle-emu 2>/dev/null)
+
+# Remove the PKGBUILD's makedepends that nothing else needs: installed as a
+# dependency and required by no package. Covers leftovers that makepkg -r
+# misses, such as ones already present before this run.
+function remove_build_deps
+    set -l makedeps (makepkg --printsrcinfo | string replace -rf '^\tmakedepends = ([^<>=]+).*' '$1')
+    set -l orphans (pacman -Qdtq)
+    set -l unneeded
+    for dep in $makedeps
+        contains -- $dep $orphans; and set -a unneeded $dep
+    end
+    if test (count $unneeded) -gt 0
+        echo "Removing build dependencies: $unneeded"
+        sudo pacman -Rns --noconfirm $unneeded
+    end
+end
+
+cd $UMBRIEL_PKG_DIR; or exit 1
+# -s install build deps, -i install the package, -r remove build deps after.
+makepkg -sir
+set -l build_status $status
+remove_build_deps
+
+if test $build_status -ne 0
+    echo >&2
+    echo "Build failed. If prepare() reported conflicts, the patch needs updating:" >&2
+    echo "  1. fix the conflicted files in $UMBRIEL_PKG_DIR/src/umbriel" >&2
+    echo "  2. git -C $UMBRIEL_PKG_DIR/src/umbriel diff HEAD > ~/.config/umbriel/patches/middle-emulation.patch" >&2
+    echo "  3. re-run this script, then commit the patch in ~/.config/umbriel" >&2
+    exit 1
+end
+
+set -l after (pacman -Q umbriel-middle-emu 2>/dev/null)
+echo
+echo "Before: $before"
+echo "After:  $after"
+
+if not umbriel config validate
+    echo "Config does not validate against the new build; fix it before logging out." >&2
+    exit 1
+end
+
+# Only offer to log out from inside a running Umbriel session.
+if not umbriel workspaces >/dev/null 2>&1
+    echo "Umbriel isn't running here; the new build starts at your next login."
+    exit 0
+end
+
+read -l -P "Log out of Umbriel now to start the new build? [y/N] " answer
+if string match -qir '^y(es)?$' -- $answer
+    umbriel msg session-quit skip-confirmation
+else
+    echo "Not logging out. The new build starts at your next login."
+end
