@@ -554,7 +554,7 @@ curve = "spring:1,900"
 # Optional live workspace reveal (see docs/user/animation.md).
 # Add the bundled effects/animation/workspace_wipe/effect.toml to your includes.
 [animation.workspaces]
-style = "reveal"          # Default: "slide"
+style = "slide"          # Default: "slide"
 effect = "workspace_wipe"
 duration_ms = 250
 curve = "easeout"
