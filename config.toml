@@ -215,7 +215,7 @@ follows_mouse = true
 # Noctalia
 "Mod+Ctrl+W" = { action = "spawn noctalia msg panel-toggle wallpaper" }
 "Mod+S" = { action = "spawn noctalia msg panel-toggle control-center" }
-"Mod+Alt+S" = { action = "spawn noctalia msg settings-toggle" }
+# "Mod+Alt+S" = { action = "spawn noctalia msg settings-toggle" }
 "Mod+L" = { action = "spawn noctalia msg session lock" }
 "Mod+X" = { action = "spawn noctalia msg panel-toggle session" }
 "Mod+V" = { action = "spawn noctalia msg panel-toggle clipboard" }
@@ -485,9 +485,19 @@ background_render = true
 
 # Keep matching windows visible locally but absent from screenshots and recordings.
 # See docs/user/window-rules.md#capture-protection.
+[[window_rule]]
+match.app_id = "^obs$"
+#block_capture = true
+
+[[window_rule]]
+match.app_id = "^discord$"
+block_capture = true
+
+# NOT IMPLEMENTED YET Dim other windows behind when present
+# See https://docs.noctalia.dev/umbriel/window-rules/?section=dim-behind#dim-behind
 # [[window_rule]]
-# match.app_id = "^private-app$"
-# block_capture = true
+# match.app_id = "^launcher$"
+# dim_behind = 0.25
 
 # Keep one application's modal dialogs as ordinary windows.
 # [[window_rule]]
