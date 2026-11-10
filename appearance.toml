@@ -1,0 +1,90 @@
+# ==============================================================================
+# Layer rules
+# https://docs.noctalia.dev/umbriel/layer-rules/
+
+# Blur noctalia UI elements
+[[layer_rule]]
+match.namespace = "^noctalia-(bar-[^\"]+|notification|dock|panel|attached-panel|osd|desktop-widget-[^\"]*)$"
+blur = true
+blur_ignore_alpha = 0.5
+blur_popups = false
+
+# ==============================================================================
+# Appearance
+# Blur uses a smaller radius than the built-in default.
+# https://docs.noctalia.dev/umbriel/appearance/
+
+[appearance]
+border_width = 2
+corner_radius = 15
+opaque_fullscreen = false
+drag_opacity = 0.25
+
+[appearance.blur]
+optimized = false
+radius = 7
+
+# Optional title bar with modifier-free dragging and floating frame resizing.
+[appearance.title_bar]
+mode = "negotiated" # Follow client decoration preferences.
+# Use "negotiated" to hide bars on Wayland windows that do not negotiate decorations.
+# Use "forced" to always show bars, or "off" to hide them. Window rules can override this.
+height = 24
+font = "sans 10"
+button_position = "right" # or "left"
+buttons = ["minimize", "maximize", "close"] # From the title outward; leave one out to hide it.
+button_corner_radius = -1 # Follow the window's corner_radius; 0 makes square buttons.
+button_glyph = "always" # X, square, and underscore symbols: "always", "hover" (while hovered or pressed), or "never".
+button_background = true # Show colored backgrounds behind the symbols
+
+[appearance.tab_bar]
+style = "indicator"         # "indicator" draws thin slots without titles
+height = 4
+position = "left"
+tab_gap = 4
+gap = -1                 # space between bar and window; -1 follows layout.gap
+font = "sans 10"
+visible = true           # false hides every bar; tabs keep working
+hide_when_single = false
+max_tabs = 6             # show at most 6 slots; more tabs scroll
+overflow = "scroll"      # or "shrink" to fit every tab
+
+# ==============================================================================
+# Effects
+# Every effect is off until a preset is selected; border and window effects
+# scale with overview zoom. Include a bundled preset (adjust /usr for the
+# package prefix), then select it by name.
+# https://docs.noctalia.dev/umbriel/effects/
+
+[effects.pool.borders]
+kind = "border"
+choose = ["pulse"]
+selection = "unused_first" # or round_robin, random
+# Select with border = "borders" in your [effects] table.
+# Add to your existing [keybinds] table:
+
+[effects]
+border = "pulse"
+cursor = "trail"
+
+# ==============================================================================
+# Animations
+# Window-rule opacity and blur fade on focus changes by default. Disable this
+# independently of border fades, or choose its own duration and curve.
+[animation.windows_opacity]
+enabled = true
+curve = "spring:1,900"
+# duration_ms = 250 # For non-spring curves; a spring sets its own length.
+
+# Optional live workspace reveal (see docs/user/animation.md).
+# Add the bundled effects/animation/workspace_wipe/effect.toml to your includes.
+[animation.workspaces]
+style = "slide"          # Default: "slide"
+effect = "workspace_wipe"
+duration_ms = 250
+curve = "easeout"
+
+# Shade over a window while a modal dialog is attached to it.
+[animation.dialogs]
+dim = 0.3
+

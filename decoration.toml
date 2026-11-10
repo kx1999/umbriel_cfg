@@ -1,0 +1,58 @@
+# Blur noctalia UI elements
+[[layer_rule]]
+match.namespace = "^noctalia-(bar-[^\"]+|notification|dock|panel|attached-panel|osd|desktop-widget-[^\"]*)$"
+blur = true
+blur_ignore_alpha = 0.5
+blur_popups = false
+
+# ==============================================================================
+# Appearance
+# Blur uses a smaller radius than the built-in default.
+# https://docs.noctalia.dev/umbriel/appearance/
+#
+[appearance.blur]
+optimized = false
+radius = 7
+
+# Optional title bar with modifier-free dragging and floating frame resizing.
+[appearance.title_bar]
+mode = "negotiated" # Follow client decoration preferences.
+# ==============================================================================
+# Effects
+# Every effect is off until a preset is selected; border and window effects
+# scale with overview zoom. Include a bundled preset (adjust /usr for the
+# package prefix), then select it by name.
+# https://docs.noctalia.dev/umbriel/effects/
+
+[effects.pool.borders]
+kind = "border"
+choose = ["pulse"]
+selection = "unused_first" # or round_robin, random
+# Select with border = "borders" in your [effects] table.
+# Add to your existing [keybinds] table:
+
+[effects]
+border = "pulse"
+cursor = "trail"
+
+# ==============================================================================
+# Animations
+# Window-rule opacity and blur fade on focus changes by default. Disable this
+# independently of border fades, or choose its own duration and curve.
+[animation.windows_opacity]
+enabled = true
+curve = "spring:1,900"
+# duration_ms = 250 # For non-spring curves; a spring sets its own length.
+
+# Optional live workspace reveal (see docs/user/animation.md).
+# Add the bundled effects/animation/workspace_wipe/effect.toml to your includes.
+[animation.workspaces]
+style = "slide"          # Default: "slide"
+effect = "workspace_wipe"
+duration_ms = 250
+curve = "easeout"
+
+# Shade over a window while a modal dialog is attached to it.
+[animation.dialogs]
+dim = 0.3
+
