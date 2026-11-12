@@ -5,10 +5,8 @@
 # Syntax: https://docs.noctalia.dev/umbriel/keybinds/
 # Actions: https://docs.noctalia.dev/umbriel/actions/
 [keybinds]
-
 "Mod+Ctrl+Escape" = "cheatsheet-toggle"
 "Mod+O" = { action = "dpms-off", allow_when_locked = true }
-# "Mod+Ctrl+L" = "keyboard-layout-next"
 
 # Noctalia
 "Mod+Ctrl+W" = { action = "spawn noctalia msg panel-toggle wallpaper" }
@@ -36,7 +34,6 @@
 "Mod+T" = { action = "spawn konsole", repeat = false }
 "Mod" = "spawn noctalia msg panel-toggle launcher"
 "Mod+Q" = { action = "window-close", repeat = false }
-# "Mod+Escape" = "session-quit"
 "Mod+Shift+Escape" = { action = "shortcuts-inhibit-toggle", allow_when_inhibited = true, repeat = false }
 
 # Media, volume and brightness keys from any input device, routed through the
@@ -65,10 +62,6 @@
 "Mod+Ctrl+5" = { action = "spawn noctalia msg plugin raycursive/discord-voice:bridge all join-favorite-5", repeat = false }
 
 # Focus and movement
-#"Mod+Left" = "window-focus-left"
-#"Mod+Down" = "window-focus-down"
-#"Mod+Up" = "window-focus-up"
-#"Mod+Right" = "window-focus-right"
 "Mod+N" = "window-focus-or-workspace-down"
 "Mod+E" = "window-focus-or-workspace-up"
 "Mod+H" = "window-focus-left"
@@ -79,9 +72,8 @@
 "Mod+Shift+E" = "window-move-or-workspace-up"
 "Mod+Shift+H" = "column-move-left"
 "Mod+Shift+I" = "column-move-right"
-
-"Mod+Alt+Shift+Left" = "window-move-left"
-"Mod+Alt+Shift+Right" = "window-move-right"
+"Mod+Shift+Ctrl+H" = "window-move-left"
+"Mod+Shift+Ctrl+I" = "window-move-right"
 
 # Window state and layout
 "Mod+F" = { action = "window-toggle-floating", repeat = false }
@@ -94,10 +86,6 @@
 "Mod+Shift+A" = "window-set-secondary-extent 1"
 "Mod+Ctrl+A" = { action = "window-toggle-maximize", repeat = false }
 "Mod+Shift+Ctrl+A" = { action = "window-toggle-maximize-to-edges", repeat = false }
-"Mod+Comma" = "window-consume-or-expel-left"
-"Mod+Period" = "window-consume-or-expel-right"
-# Needs layout.mode = "dwindle".
-# "Mod+Alt+T" = "layout-toggle-split"
 "Mod+W" = { action = "column-toggle-tabbed", repeat = false }
 "Mod+Alt+Down" = "column-focus-tab-next"
 "Mod+Alt+Up" = "column-focus-tab-previous"
@@ -105,19 +93,7 @@
 "Mod+C" = "column-center"
 
 # Workspaces
-# Move the whole workspace, retaining its name, layout, and windows.
-# "Mod+Ctrl+Page_Down" = "workspace-move-to-output-next"
-# "Mod+Ctrl+Page_Up" = "workspace-move-to-output-previous"
-# "Mod+Ctrl+W" = "workspace-move-to-output current WEB --output DP-1"
-
-# "Mod+Page_Up" = { action = "workspace-previous" }
-# "Mod+Page_Down" = { action = "workspace-next" }
-"Mod+WheelUp" = { action = "workspace-previous", cooldown_ms = 50 }
 "Mod+WheelDown" = { action = "workspace-next", cooldown_ms = 50 }
-
-# "Mod+Shift+Page_Up" = { action = "window-move-to-workspace-previous" }
-# "Mod+Shift+Page_Down" = { action = "window-move-to-workspace-next" }
-"Mod+Shift+WheelUp" = { action = "window-move-to-workspace-previous", cooldown_ms = 50 }
 "Mod+Shift+WheelDown" = { action = "window-move-to-workspace-next", cooldown_ms = 50 }
 
 "Mod+1" = "workspace-switch 1"
