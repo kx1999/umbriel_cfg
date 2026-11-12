@@ -20,7 +20,7 @@ files = [
 	"~/.config/umbriel/effects/border/rainbow-pulse/effect.toml",
 	"~/.config/umbriel/effects/cursor/ptrail/effect.toml",
 	"/usr/share/umbriel/effects/animation/workspace_wipe/effect.toml",
-	"noctalia.toml"
+	"noctalia.toml",
 ]
 
 # ==============================================================================
