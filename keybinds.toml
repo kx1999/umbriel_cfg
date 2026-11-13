@@ -21,12 +21,13 @@
 "Mod+Ctrl+S" = { action = "spawn noctalia msg screenshot-window" }
 "Mod+Shift+Ctrl+S" = { action = "spawn noctalia msg screenshot-fullscreen pick" }
 "Mod+D" = { action = "spawn noctalia msg notification-dnd-toggle" }
+"Mod+B" = { action = "spawn noctalia msg panel-toggle control-center notifications" }
+"Mod+Shift+B" = { action = "spawn noctalia msg notification-clear-history" }
 "Mod+Ctrl+P" = { action = "spawn noctalia msg plugin oldirtty/color_picker:service all pick" }
 "Mod+Ctrl+C" = { action = "spawn noctalia msg panel-toggle samuelskovbakke/calculator-plus:panel" }
 
 "Alt+Tab" = "spawn noctalia msg window-switcher hold"
-# Reverse alt+tab waiting to be merged into main
-# "Alt+Shift+Tab" = "spawn noctalia msg window-switcher hold reverse"
+"Alt+Shift+Tab" = "spawn noctalia msg window-switcher hold reverse"
 
 # Applications and session
 "Mod+K" = { action = "spawn dolphin" }
