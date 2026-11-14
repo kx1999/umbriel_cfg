@@ -12,7 +12,7 @@ files = [
 	"keybinds.toml",
 	"window_rules.toml",
 	"appearance.toml"
-	]
+]
 
 [include.optional]
 files = [

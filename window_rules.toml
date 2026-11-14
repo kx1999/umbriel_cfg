@@ -66,10 +66,6 @@ match.title = "^~ : claude — Konsole$"
 default_workspace = 3
 
 [[window_rule]]
-match.title = "^~ : nvim — Konsole$"
-default_workspace = 3
-
-[[window_rule]]
 match.app_id = "^com.anthropic.Claude$"
 default_workspace = 4
 default_scrolling_extent = 0.5
