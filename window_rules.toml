@@ -89,7 +89,7 @@ match.app_id = "^youtube-music-desktop-app$"
 default_position = { x = 0 , y = 0, anchor = "center" }
 default_floating_size_px = { width = 2560, height = 1280 }
 default_floating = true
-default_scratchpad = "default"
+default_scratchpad = "music"
 
 # Keep game menus inside their window; a focus or workspace keybind releases the pointer.
 [[window_rule]]

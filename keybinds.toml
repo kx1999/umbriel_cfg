@@ -117,8 +117,21 @@
 "Mod+Shift+9" = "window-move-to-workspace 9"
 
 # Scratchpad
-"Mod+Shift+Space" = { action = "window-move-to-scratchpad", repeat = false }
-"Mod+Space" = "scratchpad-toggle"
-"Mod+Ctrl+Space" = { action = "window-restore-from-scratchpad", repeat = false }
-"Mod+Shift+Tab" = "scratchpad-focus-next"
+"Mod+Space" = "scratchpad-toggle music"
+
+"Mod+F1" = "scratchpad-toggle 1"
+"Mod+Shift+F1" = { action = "window-move-to-scratchpad 1", repeat = false }
+"Mod+Ctrl+F1" = { action = "window-restore-from-scratchpad 1", repeat = false }
+
+"Mod+F2" = "scratchpad-toggle 2"
+"Mod+Shift+F2" = { action = "window-move-to-scratchpad 2", repeat = false }
+"Mod+Ctrl+F2" = { action = "window-restore-from-scratchpad 2", repeat = false }
+
+"Mod+F3" = "scratchpad-toggle 3"
+"Mod+Shift+F3" = { action = "window-move-to-scratchpad 3", repeat = false }
+"Mod+Ctrl+F3" = { action = "window-restore-from-scratchpad 3", repeat = false }
+
+"Mod+F4" = "scratchpad-toggle 4"
+"Mod+Shift+F4" = { action = "window-move-to-scratchpad 4", repeat = false }
+"Mod+Ctrl+F4" = { action = "window-restore-from-scratchpad 4", repeat = false }
 

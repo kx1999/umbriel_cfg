@@ -83,6 +83,25 @@ follows_mouse = true
 # hover_raises = false # Hover focuses only; clicks and keybinds raise.
 
 # ==============================================================================
+# Scratchpads
+
+[[scratchpad]]
+name = "music"
+spawn_when_empty = "youtube-music-desktop-app"
+
+[[scratchpad]]
+name = "1"
+
+[[scratchpad]]
+name = "2"
+
+[[scratchpad]]
+name = "3"
+
+[[scratchpad]]
+name = "4"
+
+# ==============================================================================
 # Layout
 # New scrolling-layout windows start at half the output width. Without this
 # setting, each application chooses its starting width. Stacked columns retain
