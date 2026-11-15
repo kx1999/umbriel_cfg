@@ -6,7 +6,7 @@
 # Actions: https://docs.noctalia.dev/umbriel/actions/
 [keybinds]
 "Mod+Ctrl+Escape" = "cheatsheet-toggle"
-"Mod+O" = { action = "dpms-off", allow_when_locked = true }
+"Mod+O" = { action = "dpms-off", allow_when_locked = true, repeat = false }
 
 # Noctalia
 "Mod+Ctrl+W" = { action = "spawn noctalia msg panel-toggle wallpaper" }
@@ -30,7 +30,7 @@
 "Alt+Shift+Tab" = "spawn noctalia msg window-switcher hold reverse"
 
 # Applications and session
-"Mod+K" = { action = "spawn dolphin" }
+"Mod+K" = { action = "spawn dolphin", repeat = false }
 "Mod+Ctrl+E" = { action = "spawn konsole -e nvim", repeat = false }
 "Mod+T" = { action = "spawn konsole", repeat = false }
 "Mod" = "spawn noctalia msg panel-toggle launcher"
@@ -50,11 +50,11 @@
 "XF86MonBrightnessDown" = { action = "spawn noctalia msg brightness-down", allow_when_locked = true }
 
 # Custom script to cycle through audio sinks
-"Mod+M" = { action = "spawn cycle-sink" }
+"Mod+M" = { action = "spawn cycle-sink", allow_when_locked = true, repeat = false }
 
 # Custom discord hotkeys requires local plugin
-"Mod+Ctrl+M" = { action = "spawn noctalia msg plugin raycursive/discord-voice:bridge all toggle-mute" }
-"Mod+Ctrl+D" = { action = "spawn noctalia msg plugin raycursive/discord-voice:bridge all toggle-deaf" }
+"Mod+Ctrl+M" = { action = "spawn noctalia msg plugin raycursive/discord-voice:bridge all toggle-mute", allow_when_locked = true, repeat = false }
+"Mod+Ctrl+D" = { action = "spawn noctalia msg plugin raycursive/discord-voice:bridge all toggle-deaf", allow_when_locked = true, repeat = false }
 "Mod+Ctrl+H" = { action = "spawn noctalia msg plugin raycursive/discord-voice:bridge all hangup", repeat = false }
 "Mod+Ctrl+1" = { action = "spawn noctalia msg plugin raycursive/discord-voice:bridge all join-favorite-1", repeat = false }
 "Mod+Ctrl+2" = { action = "spawn noctalia msg plugin raycursive/discord-voice:bridge all join-favorite-2", repeat = false }
