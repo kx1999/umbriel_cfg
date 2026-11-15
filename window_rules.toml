@@ -100,10 +100,6 @@ match.app_id = "steam"
 match.title = "^Friends List$"
 default_floating = true
 
-[[window_rule]]
-match.app_id = "^steam_app_216150$"
-default_floating = true
-
 # Keep compositor shortcuts available while a virtual machine window is focused.
 # [[window_rule]]
 # match.app_id = "^virt-manager$"

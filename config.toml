@@ -29,7 +29,19 @@ files = [
 # https://docs.noctalia.dev/umbriel/configuration/#general
 #
 [general]
-autostart = ["noctalia", "neovim", "konsole -e claude", "zen-browser", "discord", "youtube-music-desktop-app", "steam", "claude-desktop", "slack"]
+autostart = [
+	"/usr/lib/pam_kwallet_init",
+	"noctalia",
+	"neovim",
+	"konsole -e claude",
+	"zen-browser",
+	"discord",
+	"youtube-music-desktop-app",
+	"steam",
+	"claude-desktop",
+	"slack",
+]
+
 xwayland = true
 # Sharp X11 apps and games on scaled outputs; they see physical resolutions.
 xwayland_native_resolution = true
@@ -52,8 +64,9 @@ mode = "5120x1440@240"
 position = [0, 0]
 scale = 1.0
 vrr = "fullscreen"
-hdr = "auto"
+hdr = "on"
 sdr_transfer = "gamma22" # Or "srgb" for piecewise SDR decoding in HDR.
+sdr_white = 1000 # KWin-style SDR boost; only applies while HDR is active
 
 # ==============================================================================
 # Input
