@@ -16,7 +16,6 @@
 "Mod+X" = { action = "spawn noctalia msg panel-toggle session" }
 "Mod+V" = { action = "spawn noctalia msg panel-toggle clipboard" }
 "Mod+Shift+V" = { action = "spawn noctalia msg clipboard-clear && noctalia msg osd-show clipboard-off Clipboard cleared" }
-"Ctrl+Shift+P" = { action = "spawn noctalia msg plugin oldirtty/color_picker:service all pick" }
 "Mod+Shift+S" = { action = "spawn noctalia msg screenshot-region" }
 "Mod+Ctrl+S" = { action = "spawn noctalia msg screenshot-window" }
 "Mod+Shift+Ctrl+S" = { action = "spawn noctalia msg screenshot-fullscreen pick" }
