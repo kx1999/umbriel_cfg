@@ -87,6 +87,10 @@ default_floating_size_px = { width = 2560, height = 1280 }
 default_floating = true
 default_scratchpad = "music"
 
+[[window_rule]]
+match.app_id = "^scrcpy$"
+default_floating = true
+
 # Keep game menus inside their window; a focus or workspace keybind releases the pointer.
 [[window_rule]]
 match.app_id = "^steam_app_.*$"
@@ -94,6 +98,14 @@ title_bar = "off"
 default_workspace = 2
 default_floating = true
 default_position = { x = 0 , y = 0, anchor = "center" }
+
+# Native-Wayland Proton games (PROTON_ENABLE_WAYLAND=1) report <exe>.exe, not steam_app_*
+[[window_rule]]
+match.xdg_tag = "^proton-game$"
+title_bar = "off"
+default_workspace = 2
+default_floating = true
+default_position = { x = 0, y = 0, anchor = "center" }
 
 [[window_rule]]
 match.app_id = "steam"
@@ -112,10 +124,6 @@ background_render = true
 
 # Keep matching windows visible locally but absent from screenshots and recordings.
 # See docs/user/window-rules.md#capture-protection.
-[[window_rule]]
-match.app_id = "^obs$"
-#block_capture = true
-
 [[window_rule]]
 match.app_id = "^discord$"
 block_capture = true
@@ -137,9 +145,9 @@ block_capture = true
 # name = "music"
 # spawn_when_empty = "spotify"
 
-# [[window_rule]]
-# match.app_id = "^spotify$"
-# default_scratchpad = "music"
+[[window_rule]]
+match.app_id = "^youtube-music-desktop-app$"
+default_scratchpad = "music"
 
 # Hide enabled title bars only while a window is maximized to edges.
 [[window_rule]]

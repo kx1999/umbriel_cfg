@@ -10,6 +10,7 @@
 
 # Noctalia
 "Mod+Ctrl+W" = { action = "spawn noctalia msg panel-toggle wallpaper" }
+"Mod+Ctrl+Shift+W" = "spawn noctalia msg wallpaper-random"
 "Mod+S" = { action = "spawn noctalia msg panel-toggle control-center" }
 "Mod+Alt+S" = { action = "spawn noctalia msg settings-toggle" }
 "Mod+L" = { action = "spawn noctalia msg session lock" }
