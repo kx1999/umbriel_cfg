@@ -33,7 +33,7 @@ autostart = [
 	"/usr/lib/pam_kwallet_init",
 	"noctalia",
 	"neovim",
-	"konsole -e claude",
+	"kwi -e claude",
 	"zen-browser",
 	"discord",
 	"youtube-music-desktop-app",

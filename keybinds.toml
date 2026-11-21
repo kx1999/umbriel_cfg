@@ -47,6 +47,13 @@
 "XF86AudioPlay" = { action = "spawn noctalia msg media toggle", allow_when_locked = true, repeat = false }
 "XF86AudioNext" = { action = "spawn noctalia msg media next", allow_when_locked = true }
 "XF86AudioPrev" = { action = "spawn noctalia msg media previous", allow_when_locked = true }
+
+"Mod+Right" = { action = "spawn noctalia msg plugin kylex/mpris-volume:service all next", allow_when_locked = true }
+"Mod+Left" = { action = "spawn noctalia msg plugin kylex/mpris-volume:service all previous", allow_when_locked = true }
+"Mod+Up" = { action = "spawn noctalia msg plugin kylex/mpris-volume:service all up", allow_when_locked = true }
+"Mod+Down" = { action = "spawn noctalia msg plugin kylex/mpris-volume:service all down", allow_when_locked = true }
+"Mod+Return" = { action = "spawn noctalia msg plugin kylex/mpris-volume:service all toggle", allow_when_locked = true }
+
 "XF86MonBrightnessUp" = { action = "spawn noctalia msg brightness-up", allow_when_locked = true }
 "XF86MonBrightnessDown" = { action = "spawn noctalia msg brightness-down", allow_when_locked = true }
 
