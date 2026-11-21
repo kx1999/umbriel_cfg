@@ -14,6 +14,7 @@
 "Mod+S" = { action = "spawn noctalia msg panel-toggle control-center" }
 "Mod+Alt+S" = { action = "spawn noctalia msg settings-toggle" }
 "Mod+L" = { action = "spawn noctalia msg session lock" }
+"Mod+Shift+L" = { action = "spawn noctalia msg session lock && umbriel msg dpms-off" }
 "Mod+X" = { action = "spawn noctalia msg panel-toggle session" }
 "Mod+V" = { action = "spawn noctalia msg panel-toggle clipboard" }
 "Mod+Shift+V" = { action = "spawn noctalia msg clipboard-clear && noctalia msg osd-show clipboard-off Clipboard cleared" }
