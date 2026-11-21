@@ -25,14 +25,15 @@
 "Mod+Shift+B" = { action = "spawn noctalia msg notification-clear-history && noctalia msg osd-show bell-x Notifications cleared" }
 "Mod+Ctrl+P" = { action = "spawn noctalia msg plugin oldirtty/color_picker:service all pick" }
 "Mod+Ctrl+C" = { action = "spawn noctalia msg panel-toggle samuelskovbakke/calculator-plus:panel" }
+"Mod+Shift+M" = { action = "spawn noctalia msg panel-toggle control-center audio" }
 
 "Alt+Tab" = "spawn noctalia msg window-switcher hold"
 "Alt+Shift+Tab" = "spawn noctalia msg window-switcher hold reverse"
 
 # Applications and session
-"Mod+K" = { action = "spawn dolphin", repeat = false }
-"Mod+Ctrl+E" = { action = "spawn konsole -e nvim", repeat = false }
-"Mod+T" = { action = "spawn konsole", repeat = false }
+"Mod+K" = { action = "spawn kwi -e yazi", repeat = false }
+"Mod+Ctrl+E" = { action = "spawn kwi -e nvim", repeat = false }
+"Mod+T" = { action = "spawn kwi", repeat = false }
 "Mod" = "spawn noctalia msg panel-toggle launcher"
 "Mod+Q" = { action = "window-close", repeat = false }
 "Mod+Shift+Escape" = { action = "shortcuts-inhibit-toggle", allow_when_inhibited = true, repeat = false }
