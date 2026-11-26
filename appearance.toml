@@ -17,7 +17,7 @@ blur_popups = false
 [appearance]
 border_width = 2
 corner_radius = 15
-opaque_fullscreen = false
+opaque_fullscreen = true
 drag_opacity = 0.25
 
 [appearance.blur]

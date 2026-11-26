@@ -38,8 +38,6 @@ autostart = [
 	"discord",
 	"youtube-music-desktop-app",
 	"steam",
-	"claude-desktop",
-	"slack",
 ]
 
 xwayland = true
@@ -74,6 +72,9 @@ sdr_white = 1000 # KWin-style SDR boost; only applies while HDR is active
 # https://docs.noctalia.dev/umbriel/input/
 #
 [input]
+client_window_drag = false
+window_drag_toggle = "floating"
+mod_right_double_click = "maximize"
 
 [input.mouse]
 accel_profile = "flat"
