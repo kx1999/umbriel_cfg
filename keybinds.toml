@@ -32,7 +32,7 @@
 "Alt+Shift+Tab" = "spawn noctalia msg window-switcher hold reverse"
 
 # Applications and session
-"Mod+K" = { action = "spawn kwi -e yazi", repeat = false }
+"Mod+K" = { action = "spawn luciole", repeat = false }
 "Mod+Ctrl+E" = { action = "spawn kwi -e nvim", repeat = false }
 "Mod+T" = { action = "spawn kwi", repeat = false }
 "Mod" = "spawn noctalia msg panel-toggle launcher"

@@ -48,7 +48,7 @@ default_focused = false
 default_pinned = true
 
 [[window_rule]]
-match.app_id = "^zen$"
+match.app_id = "^firefox$"
 default_workspace = 1
 default_scrolling_extent = 0.5
 
@@ -72,11 +72,6 @@ default_scrolling_extent = 0.5
 
 [[window_rule]]
 match.app_id = "^slack$"
-default_workspace = 4
-default_scrolling_extent = 0.5
-
-[[window_rule]]
-match.title = "^Lab Inventory — Zen Browser$"
 default_workspace = 4
 default_scrolling_extent = 0.5
 

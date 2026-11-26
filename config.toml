@@ -34,7 +34,7 @@ autostart = [
 	"noctalia",
 	"neovim",
 	"kwi -e claude",
-	"zen-browser",
+	"firefox",
 	"discord",
 	"youtube-music-desktop-app",
 	"steam",
